@@ -278,8 +278,13 @@ void loop() {
     Serial.println(cTempFloat);
     Serial.println(humidityFloat);
 
-    if ((*rinfo).reason != REASON_DEEP_SLEEP_AWAKE) {
-
+    if ((*rinfo).reason == REASON_DEEP_SLEEP_AWAKE) {
+      clearScreen();
+      drawPixel(0, 0);
+      drawPixel(12, 0);
+      delay(1000);
+    }
+    else {
       drawNumberL((cTemp / 100) % 10, 0, 0);
       drawNumberL((cTemp / 10) % 10, 5, 0);
       drawPixel(10, 0);
@@ -295,12 +300,6 @@ void loop() {
       //drawPixel(8, 5);
       //drawNumberS(cTemp % 10, 10, 1);
       delay(5000);
-    }
-    else {
-      clearScreen();
-      drawPixel(0, 0);
-      drawPixel(12, 0);
-            delay(1000);
     }
     goToSleep();
   }
