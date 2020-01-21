@@ -52,6 +52,17 @@ void drawImage(uint8_t image[7][13]) {
   }
 }
 
+void drawDegreesSign() {
+  drawPixel(10, 0);
+  drawPixel(11, 0);
+  drawPixel(12, 0);
+  drawPixel(10, 1);
+  drawPixel(12, 1);
+  drawPixel(10, 2);
+  drawPixel(11, 2);
+  drawPixel(12, 2);
+}
+
 void blankPixel(uint8_t x, uint8_t y) {
   content[y][x] = 0;
 }
@@ -78,7 +89,7 @@ void clearScreen() {
   }
 }
 /*
-void showTime() {
+  void showTime() {
   uint8_t timeDigits[4] = {
     (hour() / 10) % 10,
     hour() % 10,
@@ -87,9 +98,9 @@ void showTime() {
   };
   drawNumberL(timeDigits[0], 0, 0);
   drawNumberL(timeDigits[1], 5, 0);
-}
+  }
 
-void bufferTime() {
+  void bufferTime() {
   uint8_t timeDigits[4] = {
     (hour() / 10) % 10,
     hour() % 10,
@@ -100,5 +111,5 @@ void bufferTime() {
   bufferNumberL(timeDigits[1], 5, 0);
   //bufferNumberLarge(timeDigits[2], 14, 0);
   //bufferNumberLarge(timeDigits[3], 20, 0);
-}
+  }
 */

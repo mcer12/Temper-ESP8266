@@ -1,3 +1,4 @@
+/*
 void setupOTA() {
   String ota_name = OTA_NAME + macLastThreeSegments(mac);
   ArduinoOTA.setHostname(ota_name.c_str());
@@ -5,6 +6,7 @@ void setupOTA() {
 
   ArduinoOTA.onStart([]() {
     Serial.println("OTA UPLOAD STARTED...");
+    ticker.detach();
     clearScreen();
   });
 
@@ -36,3 +38,4 @@ void toggleOTAMode() {
     return;
   }
 }
+*/

@@ -1,5 +1,5 @@
 
-void getSensorData(int address, unsigned int dataBuffer[6]) {
+void getSensorData(int address, float dataBuffer[6]) {
   Wire.beginTransmission(address);
   // Send measurement command
   Wire.write(0x2C);

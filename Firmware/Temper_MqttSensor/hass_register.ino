@@ -1,3 +1,11 @@
+
+void toggleHassRegisterMode() {
+  if (digitalRead(12) == LOW && buttonWakeUp()) {
+    deviceMode = HASS_REGISTER_MODE;
+    configTimer = millis(); // start counter
+  }
+}
+
 void sendConfig(StaticJsonDocument<512>& payload, String configTopic) {
   char output[512];
   serializeJson(payload, output);
@@ -13,17 +21,19 @@ void sendConfig(StaticJsonDocument<512>& payload, String configTopic) {
 
 void doHassRegister() {
 
-  Serial.println("Attemting to send discovery data...");
+  Serial.println("Attemting to send TEMPERATURE discovery data...");
   StaticJsonDocument<512> payload;
   size_t payloadSize;
-  String configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/config";
-  String stateTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/state";
+  String configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/temp/config";
+  String stateTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/temp/state";
 
-  payload["unique_id"] = "temper_" + macLastThreeSegments(mac);
-  payload["name"] = "Temper " + macLastThreeSegments(mac);
+  payload["unique_id"] = "temper_" + macLastThreeSegments(mac) + "_temperature";
+  payload["name"] = "Temper " + macLastThreeSegments(mac) + " - Temperature";
   payload["stat_t"] = stateTopic;
-  payload["ic"] = "mdi:coolant-temperature";
-  payload["exp_aft"] = "1";
+//  payload["ic"] = "mdi:coolant-temperature";
+//  payload["exp_aft"] = "1";
+  payload["dev_cla"] = "temperature";
+  payload["unit_of_meas"] = "°C";
   JsonObject device = payload.createNestedObject("device");
   device["ids"] = "temper" + macLastThreeSegments(mac);
   device["name"] = "Temper - temperature & humidity sensor";
@@ -34,11 +44,29 @@ void doHassRegister() {
 
   client.loop();
 
-  Serial.println("Done. Attemting to send battery discovery data...");
+  Serial.println("Done. Attemting to send HUMIDITY discovery data...");
+
+  configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/hum/config";
+  stateTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/hum/state";
+
+  payload["uniq_id"] = "temper_" + macLastThreeSegments(mac) + "_humidity";
+  payload["name"] = "Temper " + macLastThreeSegments(mac) + " - Humidity";
+  payload["stat_t"] = stateTopic;
+//  payload["ic"] = "mdi:battery-outline";
+  payload["dev_cla"] = "humidity";
+  payload["unit_of_meas"] = "%";
+  //payload["val_tpl"] = "{% if value > 100 %}999{% else %}{{value}}{% endif %}";
+  device = payload.createNestedObject("device");
+  device["ids"] = "temper" + macLastThreeSegments(mac);
+  sendConfig(payload, configTopic);
+
+  client.loop();
+
+  Serial.println("Done. Attemting to send BATTERY discovery data...");
 
   // And battery...
-  configTopic = "homeassistant/sensor/hugo_" + macLastThreeSegments(mac) + "/battery/config";
-  stateTopic = "homeassistant/sensor/hugo_" + macLastThreeSegments(mac) + "/battery";
+  configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/battery/config";
+  stateTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/battery/state";
 
   payload["uniq_id"] = "temper_" + macLastThreeSegments(mac) + "_battery";
   payload["name"] = "Temper " + macLastThreeSegments(mac) + " - Battery";
@@ -49,10 +77,6 @@ void doHassRegister() {
   //payload["val_tpl"] = "{% if value > 100 %}999{% else %}{{value}}{% endif %}";
   device = payload.createNestedObject("device");
   device["ids"] = "temper" + macLastThreeSegments(mac);
-  device["name"] = "Temper - temperature & humidity sensor";
-  device["mf"] = "https://github.com/mcer12/Temper-ESP8266";
-  device["mdl"] = "Temper-ESP8266";
-  device["sw"] = FW_VERSION;
   sendConfig(payload, configTopic);
 
   client.loop();

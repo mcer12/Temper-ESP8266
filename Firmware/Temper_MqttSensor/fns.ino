@@ -1,10 +1,27 @@
 
 void goToSleep() {
-  Serial.println("going to sleep");
+  unsigned int seconds = json["wake"].as<unsigned int>();
+  Serial.println("SLEEP: Save timestamp before sleep");
+  json["last_wake"] = now(); // remember when the device was put to sleep to know if it was woken up by timer or button
+  saveConfig();
+  Serial.print("SLEEP: Going to sleep for ");
+  Serial.print(seconds);
+  Serial.println(" seconds.");
   yield();
-  delay(5);
-  ESP.deepSleep(sleepTime);
+  delay(10);
+  ESP.deepSleep(seconds * 1000000); // convert seconds to us
+  delay(100);
   yield();
+}
+
+bool buttonWakeUp() {
+  unsigned long startupTime = now() - round(millis() * 0.001); // real startup time, substitute millis to get accurate bootup time.
+  if (startupTime - json["last_wake"].as<unsigned int>() < json["wake"].as<unsigned int>() * 0.95) {
+    Serial.println("Button wake-up");
+    return true;
+  }
+  Serial.println("Timer wake-up");
+  return false;
 }
 
 String macToStr(const uint8_t* mac) {
@@ -115,7 +132,8 @@ bool readConfig() {
   if (!stateFile) {
     Serial.println("Failed to read config file... first run?");
     Serial.println("Creating file and going to sleep. Try again!");
-    json["ssid"] = json["pass"] = json["ip"] = json["gw"] = json["sn"] = json["broker"] = json["port"] = json["mqttusr"] = json["mqttpass"]  = json["topic"] = json["batt"] = "";
+    json["ssid"] = json["pass"] = json["ip"] = json["gw"] = json["sn"] = json["broker"] = json["port"] = json["mqttusr"] = json["mqttpass"]  = json["ttopic"]  = json["htopic"] = json["batt"] = "";
+    json["wake"] = WAKE_TIME_DEFAULT;
     saveConfig();
     goToSleep();
     return false;
