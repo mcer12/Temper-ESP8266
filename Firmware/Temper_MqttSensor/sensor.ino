@@ -4,7 +4,7 @@ void getSensorData(int address, float dataBuffer[6]) {
   // Send measurement command
   Wire.write(0x2C);
   Wire.write(0x06);
-  // Stop I2C transmission
+  // Stop I2C transmission 
   Wire.endTransmission();
   delay(200); // default 500, lets try lower
   Wire.requestFrom(address, 6);

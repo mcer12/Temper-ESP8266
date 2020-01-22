@@ -30,6 +30,7 @@
 
 #include <FS.h>
 #include <ArduinoJson.h>
+#include <math.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
@@ -187,7 +188,7 @@ void setup() {
   }
 
   WiFi.macAddress(mac);
-  rinfo = ESP.getResetInfoPtr();
+  rinfo  = ESP.getResetInfoPtr();
   readConfig();
 
   Serial.print("RST Reason: ");
@@ -202,11 +203,17 @@ void setup() {
   const char* broker = json["broker"].as<const char*>();
   int port = json["port"].as<int>();
 
-  if (ssid[0] != '\0' && pass[0] != '\0') {
+  Wire.begin();
+
+  shift.setAllLow(); // set all pins LOW
+
+  ticker.attach_ms(DISPLAY_DARK_TIME, refreshScreen); // medium brightness
+
+  if (ssid != NULL && pass != NULL && ssid[0] != '\0' && pass[0] != '\0') {
     Serial.println("WIFI: Setting up wifi");
     WiFi.mode(WIFI_STA);
 
-    if (ip[0] != '\0' && gw[0] != '\0' && sn[0] != '\0') {
+    if (ip != NULL && gw != NULL && sn != NULL && ip[0] != '\0' && gw[0] != '\0' && sn[0] != '\0') {
       IPAddress ip_address, gateway_ip, subnet_mask;
       if (!ip_address.fromString(ip) || !gateway_ip.fromString(gw) || !subnet_mask.fromString(sn)) {
         Serial.println("Error setting up static IP, using auto IP instead. Check your configuration.");
@@ -226,7 +233,7 @@ void setup() {
           Serial.print("WIFI: Failed to connect to: ");
           Serial.println(ssid);
           break;
-        }                                                                           
+        }
         delay(200);
       } else {
         Serial.println("WIFI: Connected...");
@@ -241,7 +248,7 @@ void setup() {
     }
 
     // MQTT SETUP
-    if (broker[0] != '\0' && port != 0) {
+    if (broker != NULL && broker[0] != '\0' && port != 0) {
       client.setServer(broker, port);
     } else {
       deviceMode = CONFIG_MODE;
@@ -255,28 +262,14 @@ void setup() {
     //goToSleep();
   }
 
-  Wire.begin();
-  shift.setAllLow(); // set all pins LOW
-
-  ticker.attach_ms(DISPLAY_DARK_TIME, refreshScreen); // medium brightness
-
   setupNTP();
 }
 
 // the loop function runs over and over again forever
 void loop() {
 
-  toggleHassRegisterMode();
   toggleConfigMode();
-  
-/*
-  if (deviceMode == OTA_MODE) {
-    Serial.println("OTA: WAITING FOR OTA UPDATE...");
-    startOTA();
-    Serial.println("OTA: RETURNING TO NORMAL MODE...");
-    return;
-  }
-*/
+
   if (deviceMode == CONFIG_MODE) {
     Serial.println("CONFIG AP: STARTING CONFIG ACCESS POINT, PRESS ANY BUTTON TO EXIT...");
     startConfigPortal();
@@ -284,55 +277,63 @@ void loop() {
     return;
   }
 
-  if (deviceMode == NORMAL_MODE || deviceMode == HASS_REGISTER_MODE) {
-    mqtt_connect();
-  }
-
-  if (deviceMode == HASS_REGISTER_MODE) {
-    Serial.println("REGISTRATION: Attempting Home Assistant registration...");
-    doHassRegister();
-    Serial.println("REGISTRATION: Returning to normal mode...");
-    return;
-  }
-
   if (deviceMode == NORMAL_MODE) {
+    mqtt_connect();
+
+    if (json["reg"].as<unsigned int>() == 1) {
+      doHassRegister();
+      json["reg"] = 0;
+    }
+
     getSensorData(ADDRESS, data);
 
-    int cTemp = (((((data[0] * 256) + data[1]) * 175 * 10) / 65535) - 450);
-    int humidity = ((((data[3] * 256) + data[4]) * 100 * 10) / 65535);
     float cTempFloat = ((((data[0] * 256) + data[1]) * 175) / 65535) - 45;
-    float humidityFloat = (((data[3] * 256) + data[4]) * 100) / 65535;
+    float fTempFloat = (cTempFloat * 1.8) + 32;
+    float humFloat = (((data[3] * 256) + data[4]) * 100) / 65535;
+    int cTemp = round(cTempFloat);
+    int fTemp = round(fTempFloat);
+    int humidity = round(fTempFloat);
     Serial.print("Temperature C°: ");
     Serial.println(cTempFloat);
+    Serial.print("Temperature F°: ");
+    Serial.println(fTempFloat);
     Serial.print("Humidity: ");
-    Serial.println(humidityFloat);
-    
-    /*
-        Serial.print("last_wake: ");
-        Serial.println(json["last_wake"].as<unsigned int>());
-        Serial.print("wakeup_time: ");
-        Serial.println(currentTime);
-        Serial.print("wakeup_time - last_wake: ");
-        Serial.println(currentTime - json["last_wake"].as<unsigned int>());
-    */
+    Serial.println(humFloat);
 
+    int batt_percentage = batteryPercentage();
+    if (json["chrg"].as<int>() == 1 && batt_percentage > 100) {
+      Serial.println("Measurement publishing is disabled, disconnect charger or change settings in Config portal.");
+    } else {
       String ttopic = json["ttopic"].as<String>();
       String htopic = json["htopic"].as<String>();
-      String tpayload = String(cTempFloat, 2);
-      String hpayload = String(humidityFloat, 2);
-      
+      String batt = json["batt"].as<String>();
+      String tpayload;
+      if (json["tscale"].as<unsigned int>() == 1) {
+        String tpayload = String(fTempFloat, 2);
+      } else {
+        String tpayload = String(cTempFloat, 2);
+      }
+      String hpayload = String(humFloat, 2);
+
       publishData(ttopic, tpayload);
+      delay(20);
       publishData(htopic, hpayload);
-      publishBatteryLevel();
-      
+      delay(20);
+      publishData(batt, String(batt_percentage));
+    }
     if (!buttonWakeUp()) {
-      clearScreen();
-      drawImage(ok);
-      delay(200);
+      //clearScreen();
+      //drawImage(ok);
+      //delay(200);
     }
     else {
-      drawNumberL((cTemp / 100) % 10, 0, 0);
-      drawNumberL((cTemp / 10) % 10, 5, 0);
+      if (json["tscale"].as<unsigned int>() == 1) {
+        drawNumberL((fTemp / 10) % 10, 0, 0);
+        drawNumberL((fTemp) % 10, 5, 0);
+      } else {
+        drawNumberL((cTemp / 10) % 10, 0, 0);
+        drawNumberL((cTemp) % 10, 5, 0);
+      }
       drawDegreesSign();
       //drawNumberS((cTemp / 100) % 10, 0, 1);
       //drawNumberS((cTemp / 10) % 10, 4, 1);

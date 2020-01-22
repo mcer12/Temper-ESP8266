@@ -15,7 +15,19 @@ void goToSleep() {
 }
 
 bool buttonWakeUp() {
-  unsigned long startupTime = now() - round(millis() * 0.001); // real startup time, substitute millis to get accurate bootup time.
+  unsigned long startupTime = now() - round(millis() / 1000); // real startup time, substitute millis to get accurate bootup time.
+/*
+  Serial.print("Now:");
+  Serial.println(now());
+  Serial.print("Compensated startup timestamp:");
+  Serial.println(startupTime);
+  Serial.print("Compensated startup timestamp - last_wake");
+  Serial.println(startupTime - json["last_wake"].as<unsigned int>());
+  Serial.print("wake timeout");
+  Serial.println(json["wake"].as<unsigned int>());
+  Serial.print("wake timeout compensated");
+  Serial.println(json["wake"].as<unsigned int>() * 0.95);
+*/
   if (startupTime - json["last_wake"].as<unsigned int>() < json["wake"].as<unsigned int>() * 0.95) {
     Serial.println("Button wake-up");
     return true;
@@ -80,18 +92,6 @@ bool publishData(String topic, String payload) {
   }
 }
 
-void publishBatteryLevel() {
-  String batTopic = json["batt"].as<String>();
-  batTopic.replace("[id]", macLastThreeSegments(mac));
-  if (batTopic.length() > 0) {
-    delay(20); // lets give the broker little breath time
-    client.publish(batTopic.c_str(), String(batteryPercentage()).c_str());
-    Serial.print("Battery percentage: ");
-    Serial.print(batteryPercentage());
-    Serial.println("%");
-  }
-}
-
 /* Read analog input for battery measurement */
 int ReadAIN()
 {
@@ -132,7 +132,7 @@ bool readConfig() {
   if (!stateFile) {
     Serial.println("Failed to read config file... first run?");
     Serial.println("Creating file and going to sleep. Try again!");
-    json["ssid"] = json["pass"] = json["ip"] = json["gw"] = json["sn"] = json["broker"] = json["port"] = json["mqttusr"] = json["mqttpass"]  = json["ttopic"]  = json["htopic"] = json["batt"] = "";
+    //json["ssid"] = json["pass"] = json["ip"] = json["gw"] = json["sn"] = json["broker"] = json["port"] = json["mqttusr"] = json["mqttpass"]  = json["ttopic"]  = json["htopic"] = json["batt"] = "";
     json["wake"] = WAKE_TIME_DEFAULT;
     saveConfig();
     goToSleep();

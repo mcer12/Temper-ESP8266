@@ -1,11 +1,4 @@
 
-void toggleHassRegisterMode() {
-  if (digitalRead(12) == LOW && buttonWakeUp()) {
-    deviceMode = HASS_REGISTER_MODE;
-    configTimer = millis(); // start counter
-  }
-}
-
 void sendConfig(StaticJsonDocument<512>& payload, String configTopic) {
   char output[512];
   serializeJson(payload, output);
@@ -20,7 +13,7 @@ void sendConfig(StaticJsonDocument<512>& payload, String configTopic) {
 }
 
 void doHassRegister() {
-
+  Serial.println("Starting HASS MQTT registration...");
   Serial.println("Attemting to send TEMPERATURE discovery data...");
   StaticJsonDocument<512> payload;
   size_t payloadSize;
@@ -30,8 +23,8 @@ void doHassRegister() {
   payload["unique_id"] = "temper_" + macLastThreeSegments(mac) + "_temperature";
   payload["name"] = "Temper " + macLastThreeSegments(mac) + " - Temperature";
   payload["stat_t"] = stateTopic;
-//  payload["ic"] = "mdi:coolant-temperature";
-//  payload["exp_aft"] = "1";
+  //  payload["ic"] = "mdi:coolant-temperature";
+  //  payload["exp_aft"] = "1";
   payload["dev_cla"] = "temperature";
   payload["unit_of_meas"] = "°C";
   JsonObject device = payload.createNestedObject("device");
@@ -44,7 +37,9 @@ void doHassRegister() {
 
   client.loop();
 
-  Serial.println("Done. Attemting to send HUMIDITY discovery data...");
+  Serial.print("Done. Make sure to use following topic for TEMPERATURE:");
+  Serial.println(stateTopic);
+  Serial.println("Attemting to send HUMIDITY discovery data...");
 
   configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/hum/config";
   stateTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/hum/state";
@@ -52,7 +47,7 @@ void doHassRegister() {
   payload["uniq_id"] = "temper_" + macLastThreeSegments(mac) + "_humidity";
   payload["name"] = "Temper " + macLastThreeSegments(mac) + " - Humidity";
   payload["stat_t"] = stateTopic;
-//  payload["ic"] = "mdi:battery-outline";
+  //  payload["ic"] = "mdi:battery-outline";
   payload["dev_cla"] = "humidity";
   payload["unit_of_meas"] = "%";
   //payload["val_tpl"] = "{% if value > 100 %}999{% else %}{{value}}{% endif %}";
@@ -62,7 +57,10 @@ void doHassRegister() {
 
   client.loop();
 
-  Serial.println("Done. Attemting to send BATTERY discovery data...");
+  Serial.print("Done. Make sure to use following topic for HUMIDITY:");
+  Serial.println(stateTopic);
+
+  Serial.println("Attemting to send BATTERY discovery data...");
 
   // And battery...
   configTopic = "homeassistant/sensor/temper_" + macLastThreeSegments(mac) + "/battery/config";
@@ -82,8 +80,10 @@ void doHassRegister() {
   client.loop();
   client.disconnect();
 
-  Serial.println("Temper should now be discovered by Home Assistant. Use following topic to update values:");
+  Serial.print("Done. Make sure to use following topic for BATTERY:");
   Serial.println(stateTopic);
+
+  Serial.println("Registration completed, check for new device in Home Assistant MQTT integration.");
 
   delay(100);
 

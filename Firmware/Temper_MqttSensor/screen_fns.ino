@@ -67,20 +67,6 @@ void blankPixel(uint8_t x, uint8_t y) {
   content[y][x] = 0;
 }
 
-void toggleColonLarge(bool showColon) {
-  if (showColon) {
-    drawPixel(12, 2);
-    drawPixel(12, 3);
-    drawPixel(12, 5);
-    drawPixel(12, 6);
-  } else {
-    drawPixel(12, 2);
-    drawPixel(12, 3);
-    drawPixel(12, 5);
-    drawPixel(12, 6);
-  }
-}
-
 void clearScreen() {
   for (uint8_t row = 0; row < sizeof(rows); row++) {
     for (uint8_t col = 0; col < sizeof(cols); col++) {
@@ -88,28 +74,3 @@ void clearScreen() {
     }
   }
 }
-/*
-  void showTime() {
-  uint8_t timeDigits[4] = {
-    (hour() / 10) % 10,
-    hour() % 10,
-    (minute() / 10) % 10,
-    minute() % 10,
-  };
-  drawNumberL(timeDigits[0], 0, 0);
-  drawNumberL(timeDigits[1], 5, 0);
-  }
-
-  void bufferTime() {
-  uint8_t timeDigits[4] = {
-    (hour() / 10) % 10,
-    hour() % 10,
-    (minute() / 10) % 10,
-    minute() % 10,
-  };
-  bufferNumberL(timeDigits[0], 0, 0);
-  bufferNumberL(timeDigits[1], 5, 0);
-  //bufferNumberLarge(timeDigits[2], 14, 0);
-  //bufferNumberLarge(timeDigits[3], 20, 0);
-  }
-*/

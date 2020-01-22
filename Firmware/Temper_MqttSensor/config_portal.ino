@@ -1,4 +1,11 @@
 
+void toggleConfigMode() {
+  if ((batteryPercentage() > 100 || digitalRead(12) == LOW) && buttonWakeUp() && (*rinfo).reason != REASON_SOFT_RESTART) {
+    deviceMode = CONFIG_MODE;
+    configTimer = millis(); // start counter
+  }
+}
+
 void startConfigPortal() {
 
   clearScreen();
@@ -27,14 +34,6 @@ void startConfigPortal() {
     server.handleClient();
   }
 
-}
-
-
-void toggleConfigMode() {
-  if (batteryPercentage() > 100 && buttonWakeUp() && digitalRead(12) == HIGH) {
-    deviceMode = CONFIG_MODE;
-    configTimer = millis(); // start counter
-  }
 }
 
 void handleRoot() {
@@ -80,6 +79,15 @@ void handleRoot() {
     if (server.hasArg("wake")) {
       json["wake"] = server.arg("wake");
     }
+    if (server.hasArg("reg")) {
+      json["reg"] = server.arg("reg");
+    }
+    if (server.hasArg("tscale")) {
+      json["tscale"] = server.arg("tscale");
+    }
+    if (server.hasArg("chrg")) {
+      json["chrg"] = server.arg("chrg");
+    }
     saveConfig();
   }
 
@@ -90,7 +98,7 @@ void handleRoot() {
   if (batteryPercent >= 80) batteryColor = "#7ca53e";
   if (batteryPercent > 100) batteryColor = "#3e7ea5";
 
-  String html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Temper Configuration</title><style>html,body{margin:0;padding:0;font-size:16px;background:#444444;}body,*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;}a{color:inherit;text-decoration:underline;}.wrapper{padding:30px 0;}.container{margin:auto;padding:40px;max-width:500px;color:#fff;background:#000;box-shadow:0 0 100px rgba(0,0,0,.5);border-radius:50px;}.row{margin-bottom:15px;}h1{margin:0 0 10px 0;font-family:Arial,sans-serif;font-weight:300;font-size:2rem;}h1 + p{margin-bottom:30px;}h2{margin:30px 0 0 0;font-family:Arial,sans-serif;font-weight:300;font-size:1.5rem;}p{font-size:.85rem;margin:0 0 20px 0;color:rgba(255,255,255,.7);}label{display:block;width:100%;margin-bottom:5px;}input[type=\"text\"],input[type=\"password\"],select{display:inline-block;width:100%;height:42px;line-height:38px;padding:0 20px;color:#fff;border:2px solid #666;background:none;border-radius:5px;transition:.15s;box-shadow:none;outline:none;}input[type=\"text\"]:hover,input[type=\"password\"]:hover,select:hover{border-color:#ababab;}input[type=\"text\"]:focus,input[type=\"password\"]:focus,select:focus{border-color:#fff;}option{color:#000;}button{display:block;width:100%;padding:10px 20px;font-size:1rem;font-weight:700;text-transform:uppercase;background:#ff9c29;border:0;border-radius:5px;cursor:pointer;transition:.15s;outline:none;}button:hover{background:#ffba66;}.github{margin-top:15px;text-align:center;}.github a{color:#ff9c29;transition:.15s;}.github a:hover{color:#ffba66;}.bat p{margin:0 0 5px 0;text-align:center;text-transform:uppercase;font-size:.8rem;}.bat >div{position:relative;margin:0 auto 20px;width:300px;height:10px;background:#272727;border-radius:5px;}.bat >div >div{position:absolute;left:0;top:0;bottom:0;border-radius:5px;min-width:10px;}.mac{display:inline-block;margin-top:8px;padding:2px 5px;color:#fff;background:#444;border-radius:3px;}</style><style media=\"all and (max-width:520px)\">.wrapper{padding:20px 0;}.container{padding:25px 15px;border-radius:0;}</style></head><body><div class=\"wrapper\">";
+  String html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Temper Configuration</title><style>html,body{margin:0;padding:0;font-size:16px;background:#444444;}body,*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;}a{color:inherit;text-decoration:underline;}.wrapper{padding:30px 0;}.container{margin:auto;padding:40px;max-width:500px;color:#fff;background:#000;box-shadow:0 0 100px rgba(0,0,0,.5);border-radius:50px;}.row{margin-bottom:15px;}h1{margin:0 0 10px 0;font-family:Arial,sans-serif;font-weight:300;font-size:2rem;}h1 + p{margin-bottom:30px;}h2{margin:30px 0 0 0;font-family:Arial,sans-serif;font-weight:300;font-size:1.5rem;}p{font-size:.85rem;margin:0 0 20px 0;color:rgba(255,255,255,.7);}label{display:block;width:100%;margin-bottom:5px;}label+p{margin-bottom:5px;}input[type=\"text\"],input[type=\"password\"],select{display:inline-block;width:100%;height:42px;line-height:38px;padding:0 20px;color:#fff;border:2px solid #666;background:none;border-radius:5px;transition:.15s;box-shadow:none;outline:none;}input[type=\"text\"]:hover,input[type=\"password\"]:hover,select:hover{border-color:#69b6ac;}input[type=\"text\"]:focus,input[type=\"password\"]:focus,select:focus{border-color:#a5fff3;}option{color:#000;}button{display:block;width:100%;padding:10px 20px;font-size:1rem;font-weight:700;text-transform:uppercase;background:#43ffe5;border:0;border-radius:5px;cursor:pointer;transition:.15s;outline:none;}button:hover{background:#a5fff3;}.github{margin-top:15px;text-align:center;}.github a{color:#43ffe5;transition:.15s;}.github a:hover{color:#a5fff3;}.bat p{margin:0 0 5px 0;text-align:center;text-transform:uppercase;font-size:.8rem;}.bat >div{position:relative;margin:0 auto 20px;width:300px;height:10px;background:#272727;border-radius:5px;}.bat >div >div{position:absolute;left:0;top:0;bottom:0;border-radius:5px;min-width:10px;}.mac{display:inline-block;margin-top:8px;padding:2px 5px;color:#fff;background:#444;border-radius:3px;}</style><style media=\"all and (max-width:520px)\">.wrapper{padding:20px 0;}.container{padding:25px 15px;border-radius:0;}</style></head><body><div class=\"wrapper\">";
   html += "<div class=\"bat\"><p>Battery level: " + ((batteryPercent > 100) ? "Charging" : (String)batteryPercent + "%") + "</p><div><div style=\"background: " + batteryColor + ";width: " + ((batteryPercent > 100) ? 100 : batteryPercent) + "%\"></div></div></div>";
   html += "<div class=\"container\"> <form method=\"post\" action=\"/\"> <h1>Temper Configuration</h1> <p>Config AP will automatically shut down after 5 minutes. To leave immediately, disconnect USB power and push the button.</p> <h2>Network settings</h2> <p>Select your network settings here.</p> <div class=\"row\"> <label for=\"ssid\">WiFi SSID</label> <input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"";
   html += json["ssid"].as<const char*>();
@@ -122,17 +130,44 @@ void handleRoot() {
   html += "<div class=\"row\"> <label for=\"mqttpass\">Password (optional)</label> <input type=\"password\" id=\"mqttpass\" name=\"mqttpass\" value=\"";
   html += json["mqttpass"].as<const char*>();
   html += "\"> </div>";
-  html += "<h2>Button settings</h2> <p>Assign MQTT Topic and wake-up interval, example (for Home Assistant):<br>\"homeassistant/sensor/temper_[id]/state\"<br>";
-  html += "Use shortcode <strong>[id]</strong> to add 6-character unique identifier. This is especially useful if you have more Temper sensors and want to distinguish between them.<br></p>";
-  html += "<div class=\"row\"> <label for=\"ttopic\">Temperature topic</label> <input type=\"text\" id=\"ttopic\" name=\"ttopic\" value=\"";
+  html += "<h2>Sensor settings</h2> <p>Assign MQTT Topics and wake-up interval.<br>";
+  html += "Use shortcode <strong>[id]</strong> to add 6-character unique identifier. This is especially useful if you have more Temper sensors and want to distinguish between them.</p>";
+  html += "<p>Use topics below with Home Assistant MQTT auto-discovery:<br>";
+  html += "Temperature: <b>homeassistant/sensor/temper_[id]/temp/state</b><br>";
+  html += "Humidity: <b>homeassistant/sensor/temper_[id]/hum/state</b><br>";
+  html += "Battery: <b>homeassistant/sensor/temper_[id]/battery/state</b></p>";
+  html += "<div class=\"row\"> <label for=\"ttopic\">Temperature topic</label>";
+  html += "<input type=\"text\" id=\"ttopic\" name=\"ttopic\" value=\"";
   html += json["ttopic"].as<const char*>();
   html += "\"></div>";
-    html += "<div class=\"row\"> <label for=\"htopic\">Humidity topic</label> <input type=\"text\" id=\"htopic\" name=\"htopic\" value=\"";
+  html += "<div class=\"row\"> <label for=\"htopic\">Humidity topic</label>";
+  html += "<input type=\"text\" id=\"htopic\" name=\"htopic\" value=\"";
   html += json["htopic"].as<const char*>();
   html += "\"></div>";
+  html += "<div class=\"row\"><label for=\"batt\">Battery monitoring Topic</label>";
+  html += "<input type=\"text\" id=\"batt\" name=\"batt\" value=\"";
+  html += json["batt"].as<const char*>();
+  html += "\"></div>";
+
+  html += "<div class=\"row\"><label for=\"tscale\">Temperature scale</label>";
+  html += "<select id=\"tscale\" name=\"tscale\">";
+  unsigned int tscale = json["tscale"].as<unsigned int>();
+  html += "<option value=\"0\"";
+  if (tscale == 0) html += " selected";
+  html += ">Celsius</option>";
+  html += "<option value=\"1\"";
+  if (tscale == 1) html += " selected";
+  html += ">Fahrenheit</option>";
+  html += "</select></div>";
+
+  html += "<div class=\"row\"><label for=\"reg\">Register in HASS on next wake-up</label>";
+  html += "<select id=\"reg\" name=\"reg\">";
+  html += "<option value=\"0\" selected>No</option>";
+  html += "<option value=\"1\">Yes</option>";
+  html += "</select></div>";
+
   html += "<div class=\"row\"><label for=\"wake\">Wake-up interval</label>";
   html += "<select id=\"wake\" name=\"wake\">";
-
   unsigned int wake = json["wake"].as<unsigned int>();
   html += "<option value=\"60\"";
   if (wake == 60) html += " selected";
@@ -146,13 +181,19 @@ void handleRoot() {
   html += "<option value=\"3600\"";
   if (wake == 3600) html += " selected";
   html += ">60 min.</option>";
-
   html += "</select></div>";
-  html += "<h2>Battery monitoring</h2><p>You can monitor your battery level percentage (rough estimation).<br>";
-  html += "For example: homeassistant/sensor/temper_[id]/battery</p>";
-  html += "<div class=\"row\"><label for=\"batt\">Battery Topic</label> <input type=\"text\" id=\"batt\" name=\"batt\" value=\"";
-  html += json["batt"].as<const char*>();
-  html += "\"></div>";
+
+  html += "<div class=\"row\"><label for=\"chrg\">Disable measurements publishing when charging</label>";
+  html += "<select id=\"chrg\" name=\"chrg\">";
+  int chrg = json["chrg"].as<int>();
+  html += "<option value=\"1\"";
+  if (chrg == 1) html += " selected";
+  html += ">Yes</option>";
+  html += "<option value=\"0\"";
+  if (chrg == 0) html += " selected";
+  html += ">No</option>";
+  html += "</select></div>";
+
   html += "<div class=\"row\"> <button type=\"submit\">Save and reboot</button> </div> </form> </div>";
   html += "<div class=\"github\"> <p>MQTT firmware ";
   html += FW_VERSION;
