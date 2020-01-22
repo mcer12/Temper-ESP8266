@@ -37,7 +37,7 @@ void doHassRegister() {
 
   client.loop();
 
-  Serial.print("Done. Make sure to use following topic for TEMPERATURE:");
+  Serial.println("Done. Make sure to use following topic for TEMPERATURE:");
   Serial.println(stateTopic);
   Serial.println("Attemting to send HUMIDITY discovery data...");
 
@@ -57,7 +57,7 @@ void doHassRegister() {
 
   client.loop();
 
-  Serial.print("Done. Make sure to use following topic for HUMIDITY:");
+  Serial.println("Done. Make sure to use following topic for HUMIDITY:");
   Serial.println(stateTopic);
 
   Serial.println("Attemting to send BATTERY discovery data...");
@@ -80,12 +80,9 @@ void doHassRegister() {
   client.loop();
   client.disconnect();
 
-  Serial.print("Done. Make sure to use following topic for BATTERY:");
+  Serial.println("Done. Make sure to use following topic for BATTERY:");
   Serial.println(stateTopic);
 
   Serial.println("Registration completed, check for new device in Home Assistant MQTT integration.");
 
-  delay(100);
-
-  goToSleep();
 }

@@ -48,7 +48,7 @@
 
 #define AP_NAME "TEMPER_" // Last 6 MAC address characters will be appended at the end of the OTA name
 #define OTA_NAME "TEMPER_" // Last 6 MAC address characters will be appended at the end of the OTA name
-#define FW_VERSION "1.0"
+#define FW_VERSION "1.01"
 #define OTA_BLINK_SPEED 100
 #define OTA_TIMEOUT 300000 // 5 minutes
 #define CONFIG_BLINK_SPEED 500
@@ -56,8 +56,9 @@
 #define DISPLAY_DARK_TIME 1 // millis, smaller number = brighter display
 #define ADDRESS 0x44 // SHT30 I2C address
 #define WAKE_TIME_DEFAULT 1800 // possible values: 60 = 1min, 600 = 10min, 1800 = 30min, 3600 = 1h
+#define CRYSTAL_COMPENSATION_MULTIPLIER 0.91 // compensate huge inaccuracy in deep sleep timer
 
-// DO NOT CHANGE DEFINES BELOW
+// ONLY CHANGE DEFINES BELOW IF YOU KNOW WHAT YOU'RE DOING!
 #define NORMAL_MODE 0
 #define OTA_MODE 1
 #define CONFIG_MODE 2
@@ -309,19 +310,18 @@ void loop() {
       String batt = json["batt"].as<String>();
       String tpayload;
       if (json["tscale"].as<unsigned int>() == 1) {
-        String tpayload = String(fTempFloat, 2);
+        tpayload = String(fTempFloat, 2);
       } else {
-        String tpayload = String(cTempFloat, 2);
+        tpayload = String(cTempFloat, 2);
       }
       String hpayload = String(humFloat, 2);
 
       publishData(ttopic, tpayload);
-      delay(20);
       publishData(htopic, hpayload);
-      delay(20);
       publishData(batt, String(batt_percentage));
+
     }
-    if (!buttonWakeUp()) {
+    if (!buttonWakeUp() && json["last_wake"] > 0) {
       //clearScreen();
       //drawImage(ok);
       //delay(200);
@@ -342,6 +342,8 @@ void loop() {
       //serializeJson(json, Serial);
       delay(5000);
     }
+    client.loop();
+    client.disconnect();
     goToSleep();
   }
 }

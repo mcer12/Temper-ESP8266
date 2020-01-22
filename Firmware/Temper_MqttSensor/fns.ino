@@ -15,20 +15,22 @@ void goToSleep() {
 }
 
 bool buttonWakeUp() {
-  unsigned long startupTime = now() - round(millis() / 1000); // real startup time, substitute millis to get accurate bootup time.
+  unsigned int startupTime = now() - round(millis() / 1000); // real startup time, substitute millis to get accurate bootup time.
 /*
-  Serial.print("Now:");
+  Serial.print("Now: ");
   Serial.println(now());
-  Serial.print("Compensated startup timestamp:");
+  Serial.print("Compensated startup timestamp: ");
   Serial.println(startupTime);
-  Serial.print("Compensated startup timestamp - last_wake");
+  Serial.print("last_wake: ");
+  Serial.println(json["last_wake"].as<unsigned int>());
+  Serial.print("Compensated startup timestamp - last_wake: ");
   Serial.println(startupTime - json["last_wake"].as<unsigned int>());
-  Serial.print("wake timeout");
+  Serial.print("wake timeout: ");
   Serial.println(json["wake"].as<unsigned int>());
-  Serial.print("wake timeout compensated");
-  Serial.println(json["wake"].as<unsigned int>() * 0.95);
+  Serial.print("wake timeout compensated: ");
+  Serial.println(json["wake"].as<unsigned int>() * CRYSTAL_COMPENSATION_MULTIPLIER);
 */
-  if (startupTime - json["last_wake"].as<unsigned int>() < json["wake"].as<unsigned int>() * 0.95) {
+  if (startupTime - json["last_wake"].as<unsigned int>() < json["wake"].as<unsigned int>() * CRYSTAL_COMPENSATION_MULTIPLIER) {
     Serial.println("Button wake-up");
     return true;
   }
@@ -65,12 +67,12 @@ void mqtt_connect() {
   while (!client.connected() && i < 5) { // Try 5 times, then give up and go to sleep.
     Serial.println("Attempting MQTT connection...");
     if (mqtt_usr[0] != '\0' && mqtt_pass[0] != '\0') {
-      if (client.connect(String("hugo_" + macLastThreeSegments(mac)).c_str(), mqtt_usr, mqtt_pass)) {
+      if (client.connect(String("temper_" + macLastThreeSegments(mac)).c_str(), mqtt_usr, mqtt_pass)) {
         Serial.println("MQTT connected using credentials.");
         return;
       }
     } else {
-      if (client.connect(String("hugo_" + macLastThreeSegments(mac)).c_str())) {
+      if (client.connect(String("temper_" + macLastThreeSegments(mac)).c_str())) {
         Serial.println("MQTT connected anonymously.");
         return;
       }
@@ -131,11 +133,10 @@ bool readConfig() {
   File stateFile = SPIFFS.open("/config.json", "r");
   if (!stateFile) {
     Serial.println("Failed to read config file... first run?");
-    Serial.println("Creating file and going to sleep. Try again!");
+    Serial.println("Creating new file...");
     //json["ssid"] = json["pass"] = json["ip"] = json["gw"] = json["sn"] = json["broker"] = json["port"] = json["mqttusr"] = json["mqttpass"]  = json["ttopic"]  = json["htopic"] = json["batt"] = "";
     json["wake"] = WAKE_TIME_DEFAULT;
     saveConfig();
-    goToSleep();
     return false;
   }
   DeserializationError error = deserializeJson(json, stateFile.readString());

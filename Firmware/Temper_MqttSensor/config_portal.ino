@@ -130,7 +130,7 @@ void handleRoot() {
   html += "<div class=\"row\"> <label for=\"mqttpass\">Password (optional)</label> <input type=\"password\" id=\"mqttpass\" name=\"mqttpass\" value=\"";
   html += json["mqttpass"].as<const char*>();
   html += "\"> </div>";
-  html += "<h2>Sensor settings</h2> <p>Assign MQTT Topics and wake-up interval.<br>";
+  html += "<h2>MQTT Topic settings</h2> <p>Assign MQTT Topics and wake-up interval.<br>";
   html += "Use shortcode <strong>[id]</strong> to add 6-character unique identifier. This is especially useful if you have more Temper sensors and want to distinguish between them.</p>";
   html += "<p>Use topics below with Home Assistant MQTT auto-discovery:<br>";
   html += "Temperature: <b>homeassistant/sensor/temper_[id]/temp/state</b><br>";
@@ -148,6 +148,8 @@ void handleRoot() {
   html += "<input type=\"text\" id=\"batt\" name=\"batt\" value=\"";
   html += json["batt"].as<const char*>();
   html += "\"></div>";
+
+  html += "<h2>Other settings</h2><p>More settings you might find useful.</p>";
 
   html += "<div class=\"row\"><label for=\"tscale\">Temperature scale</label>";
   html += "<select id=\"tscale\" name=\"tscale\">";
@@ -203,6 +205,7 @@ void handleRoot() {
 
   if (server.args()) {
     delay(1000);
+    saveConfig();
     ESP.reset();
     delay(100);
   }
