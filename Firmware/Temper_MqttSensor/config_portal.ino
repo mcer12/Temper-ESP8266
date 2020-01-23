@@ -1,6 +1,6 @@
 
 void toggleConfigMode() {
-  if ((batteryPercentage() > 100 || digitalRead(12) == LOW) && buttonWakeUp() && (*rinfo).reason != REASON_SOFT_RESTART) {
+  if ((batteryPercentage() > 100 || digitalRead(12) == LOW) && buttonWakeUp() && (*rinfo).reason != REASON_SOFT_RESTART && (*rinfo).reason != REASON_EXT_SYS_RST) {
     deviceMode = CONFIG_MODE;
     configTimer = millis(); // start counter
   }
