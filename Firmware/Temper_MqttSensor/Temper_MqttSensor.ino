@@ -208,8 +208,6 @@ void setup() {
 
   shift.setAllLow(); // set all pins LOW
 
-  ticker.attach_ms(DISPLAY_DARK_TIME, refreshScreen); // medium brightness
-
   if (ssid != NULL && pass != NULL && ssid[0] != '\0' && pass[0] != '\0') {
     Serial.println("WIFI: Setting up wifi");
     WiFi.mode(WIFI_STA);
@@ -264,6 +262,7 @@ void setup() {
   }
 
   setupNTP();
+  ticker.attach_ms(DISPLAY_DARK_TIME, refreshScreen); // medium brightness
 }
 
 // the loop function runs over and over again forever

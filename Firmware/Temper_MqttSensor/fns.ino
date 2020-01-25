@@ -1,5 +1,7 @@
 
 void goToSleep() {
+  ticker.detach();
+  shift.setAllLow(); // set all pins LOW
   unsigned int seconds = json["wake"].as<unsigned int>();
   Serial.println("SLEEP: Save timestamp before sleep");
   json["last_wake"] = now(); // remember when the device was put to sleep to know if it was woken up by timer or button
@@ -16,20 +18,20 @@ void goToSleep() {
 
 bool buttonWakeUp() {
   unsigned int startupTime = now() - round(millis() / 1000); // real startup time, substitute millis to get accurate bootup time.
-/*
-  Serial.print("Now: ");
-  Serial.println(now());
-  Serial.print("Compensated startup timestamp: ");
-  Serial.println(startupTime);
-  Serial.print("last_wake: ");
-  Serial.println(json["last_wake"].as<unsigned int>());
-  Serial.print("Compensated startup timestamp - last_wake: ");
-  Serial.println(startupTime - json["last_wake"].as<unsigned int>());
-  Serial.print("wake timeout: ");
-  Serial.println(json["wake"].as<unsigned int>());
-  Serial.print("wake timeout compensated: ");
-  Serial.println(json["wake"].as<unsigned int>() * CRYSTAL_COMPENSATION_MULTIPLIER);
-*/
+  /*
+    Serial.print("Now: ");
+    Serial.println(now());
+    Serial.print("Compensated startup timestamp: ");
+    Serial.println(startupTime);
+    Serial.print("last_wake: ");
+    Serial.println(json["last_wake"].as<unsigned int>());
+    Serial.print("Compensated startup timestamp - last_wake: ");
+    Serial.println(startupTime - json["last_wake"].as<unsigned int>());
+    Serial.print("wake timeout: ");
+    Serial.println(json["wake"].as<unsigned int>());
+    Serial.print("wake timeout compensated: ");
+    Serial.println(json["wake"].as<unsigned int>() * CRYSTAL_COMPENSATION_MULTIPLIER);
+  */
   if (startupTime - json["last_wake"].as<unsigned int>() < json["wake"].as<unsigned int>() * CRYSTAL_COMPENSATION_MULTIPLIER) {
     Serial.println("Button wake-up");
     return true;
