@@ -23,7 +23,7 @@ Temper is a compact, low power temperature sensor based on ESP8266 and SHT30 wit
 - Plastic case ([download on thingiverse](https://www.thingiverse.com/thing:4126709))
 - Hot glue to fixate pcb in the enclosure
 - Patience
-- You can order it with most of the components pre-assembled from JLCPCB (you can find Pick&Place + BOM + Gerber in the above mentioned directory).
+- You can order it with most of the components pre-assembled from JLCPCB (you can find Pick&Place + BOM + Gerber in the above mentioned directory). Partially assambled pcbs will cost you little over $60 for 10pcs, see components information in "PCB and BOM" directory.
 
 ## Wiki
 - [Flashing](https://github.com/mcer12/Temper-ESP8266/wiki/Flashing)
