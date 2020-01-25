@@ -7,13 +7,19 @@ Temper is a compact, low power temperature sensor based on ESP8266 and SHT30 wit
 - 13x7 pixel led display
 - TP4054 charging IC onboard for easy charging via USB
 
+## How does this thing work?
+- After it's set up in the config portal, it periodically wakes up and publishes Temperature, Humidity and battery percentage through MQTT
+- Pushing the reset button will force send current data and show Temperature on the display
+
+![alt text](https://github.com/mcer12/Temper-ESP8266/raw/master/Images/with_cover_green.jpg)
+
 ![alt text](https://github.com/mcer12/Temper-ESP8266/raw/master/Images/pcb.jpg)
 
 ## What you need to make it yourself
 - Hot air station / reflow oven (SHT30 has pins at the bottom, can't be hand-soldered)
 - Components listed in "PCB and BOM" directory
 - Patience
-- You can order it with most of the components pre-assembled from JLCPCB (you can find Pick&Place + BOM + Gerber  in the above directory)
+- You can order it with most of the components pre-assembled from JLCPCB (you can find Pick&Place + BOM + Gerber in the above mentioned directory).
 
 ## Wiki
 - [Flashing](https://github.com/mcer12/Temper-ESP8266/wiki/Flashing)
