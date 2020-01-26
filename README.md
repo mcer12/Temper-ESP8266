@@ -19,7 +19,7 @@ Temper is a compact, low power temperature sensor based on ESP8266 and SHT30 wit
 
 ## What you need to make it yourself
 - Hot air station / reflow oven (SHT30 has pins at the bottom, can't be hand-soldered)
-- Components listed in "PCB and BOM" directory
+- Components listed in "PCB and BOM" directory (lcsc and aliexpress links provided)
 - Plastic case ([download on thingiverse](https://www.thingiverse.com/thing:4126709))
 - Hot glue to fixate pcb in the enclosure
 - Patience
