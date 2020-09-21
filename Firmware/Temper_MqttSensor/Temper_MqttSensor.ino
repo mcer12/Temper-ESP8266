@@ -292,7 +292,7 @@ void loop() {
     float humFloat = (((data[3] * 256) + data[4]) * 100) / 65535;
     int cTemp = round(cTempFloat);
     int fTemp = round(fTempFloat);
-    int humidity = round(fTempFloat);
+    int humidity = round(humFloat);
     Serial.print("Temperature C°: ");
     Serial.println(cTempFloat);
     Serial.print("Temperature F°: ");
