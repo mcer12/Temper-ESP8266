@@ -6,7 +6,7 @@
   https://github.com/mcer12/Temper-ESP8266
 
   3D printed case:
-  ---THINGIVERSE LINK---
+  https://www.thingiverse.com/thing:4126709
 
   ***
 
@@ -168,7 +168,7 @@ ESP8266WebServer server(80);
 WiFiClient espClient;
 PubSubClient client(espClient);
 DynamicJsonDocument json(2048); // config buffer
-ShiftRegister74HC595 shift(3, 13, 14, 15);
+ShiftRegister74HC595<3> shift(13, 14, 15);
 WiFiUDP Udp;
 ESP8266HTTPUpdateServer httpUpdateServer;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
@@ -183,6 +183,8 @@ void setup() {
   pinMode(2, INPUT_PULLUP);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED OFF (inversed)
+  
+  shift.setAllLow(); // set all pins LOW
 
   if (!SPIFFS.begin()) {
     Serial.println("SPIFFS: Failed to mount file system");
@@ -195,71 +197,11 @@ void setup() {
   Serial.print("RST Reason: ");
   Serial.println((*rinfo).reason);
 
-  const char* ssid = json["ssid"].as<const char*>();
-  const char* pass = json["pass"].as<const char*>();
-  const char* ip = json["ip"].as<const char*>();
-  const char* gw = json["gw"].as<const char*>();
-  const char* sn = json["sn"].as<const char*>();
-
-  const char* broker = json["broker"].as<const char*>();
-  int port = json["port"].as<int>();
-
   Wire.begin();
 
-  shift.setAllLow(); // set all pins LOW
-
-  if (ssid != NULL && pass != NULL && ssid[0] != '\0' && pass[0] != '\0') {
-    Serial.println("WIFI: Setting up wifi");
-    WiFi.mode(WIFI_STA);
-
-    if (ip != NULL && gw != NULL && sn != NULL && ip[0] != '\0' && gw[0] != '\0' && sn[0] != '\0') {
-      IPAddress ip_address, gateway_ip, subnet_mask;
-      if (!ip_address.fromString(ip) || !gateway_ip.fromString(gw) || !subnet_mask.fromString(sn)) {
-        Serial.println("Error setting up static IP, using auto IP instead. Check your configuration.");
-      } else {
-        WiFi.config(ip_address, gateway_ip, subnet_mask);
-      }
-    }
-
-    // serializeJson(json, Serial);
-
-    WiFi.begin(ssid, pass);
-
-    for (int i = 0; i < 100; i++) {
-      if (WiFi.status() != WL_CONNECTED) {
-        if (i > 50) {
-          deviceMode = CONFIG_MODE;
-          Serial.print("WIFI: Failed to connect to: ");
-          Serial.println(ssid);
-          break;
-        }
-        delay(200);
-      } else {
-        Serial.println("WIFI: Connected...");
-        Serial.print("SSID: ");
-        Serial.println(WiFi.SSID());
-        Serial.print("WIFI: Mac address: ");
-        Serial.println(WiFi.macAddress());
-        Serial.print("WIFI: IP address: ");
-        Serial.println(WiFi.localIP());
-        break;
-      }
-    }
-
-    // MQTT SETUP
-    if (broker != NULL && broker[0] != '\0' && port != 0) {
-      client.setServer(broker, port);
-    } else {
-      deviceMode = CONFIG_MODE;
-      Serial.println("MQTT: Broker address or port is not set, going to config mode.");
-    }
-
-  } else {
-    deviceMode = CONFIG_MODE;
-    Serial.println("SETTINGS: No credentials set, going to config mode.");
-    startConfigPortal();
-    //goToSleep();
-  }
+  wifi_connect();
+  mqtt_connect();
+  
 
   setupNTP();
   ticker.attach_ms(DISPLAY_DARK_TIME, refreshScreen); // medium brightness
@@ -278,7 +220,6 @@ void loop() {
   }
 
   if (deviceMode == NORMAL_MODE) {
-    mqtt_connect();
 
     if (json["reg"].as<unsigned int>() == 1) {
       doHassRegister();
